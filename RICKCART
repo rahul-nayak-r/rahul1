@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RICKCART | Enterprise Demo</title>
+    <style>
+        :root { --primary: #ff9800; --bg: #0f2027; --glass: rgba(255, 255, 255, 0.1); }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); color: #fff; min-height: 100vh; }
+        
+        /* Login Page */
+        #loginPage { height: 100vh; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .login-box { padding: 40px; background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
+        
+        /* Animation */
+        .man { width: 60px; height: 60px; background: var(--primary); border-radius: 50%; margin-bottom: 20px; animation: jump 0.8s infinite alternate cubic-bezier(0.455, 0.03, 0.515, 0.955); }
+        @keyframes jump { from { transform: translateY(0); } to { transform: translateY(-40px); } }
+
+        /* Inputs & Buttons */
+        input { width: 80%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; background: rgba(255,255,255,0.2); color: white; outline: none; }
+        button { padding: 12px 25px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        /* Home Page */
+        #homePage { display: none; padding: 20px; max-width: 1200px; margin: auto; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--glass); }
+        
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; margin-top: 30px; }
+        .card { padding: 20px; border-radius: 15px; background: var(--glass); backdrop-filter: blur(10px); transition: 0.3s; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.15); }
+        .card img { width: 100%; height: 150px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
+
+        .search-bar { width: 100%; max-width: 400px; margin: 20px auto; display: block; }
+    </style>
+</head>
+<body>
+
+<div id="loginPage">
+    <div class="man"></div>
+    <div class="login-box">
+        <h2>RICKCART</h2>
+        <p style="font-size: 0.8em; opacity: 0.7;">Enterprise Procurement System</p>
+        <input id="user" placeholder="Email Address">
+        <input id="pass" type="password" placeholder="Password">
+        <br>
+        <button onclick="handleLogin()">Sign In</button>
+    </div>
+</div>
+
+<div id="homePage">
+    <div class="nav">
+        <div style="font-size: 24px; font-weight: bold; color: var(--primary);">RICKCART</div>
+        <div>
+            <span id="cartCount">🛒 0 Items</span> | 
+            <button onclick="handleLogout()" style="background:transparent; border:1px solid #ff4b2b; font-size: 12px; padding: 5px 10px;">Logout</button>
+        </div>
+    </div>
+
+    <input class="search-bar" placeholder="🔍 Search inventory..." onkeyup="searchProduct(this.value)">
+
+    <div class="products" id="productList"></div>
+</div>
+
+<script>
+    const inventory = [
+        {id:1, name:"Ultra-Wide Monitor", price:450, img:"https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400"},
+        {id:2, name:"Mechanical Keyboard", price:120, img:"https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=400"},
+        {id:3, name:"Workstation Laptop", price:1200, img:"https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400"},
+        {id:4, name:"Noise-Canceling Mic", price:80, img:"https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=400"}
+    ];
+
+    let cart = [];
+
+    function handleLogin() {
+        const user = document.getElementById('user').value;
+        if(user) {
+            localStorage.setItem("session_token", "secure_hash_" + Math.random());
+            showHome();
+        } else {
+            alert("Please enter credentials");
+        }
+    }
+
+    function handleLogout() {
+        localStorage.removeItem("session_token");
+        location.reload();
+    }
+
+    function showHome() {
+        document.getElementById('loginPage').style.display='none';
+        document.getElementById('homePage').style.display='block';
+        render(inventory);
+    }
+
+    function render(list) {
+        let html = list.map(p => `
+            <div class="card">
+                <img src="${p.img}" alt="${p.name}">
+                <h3>${p.name}</h3>
+                <p style="color:var(--primary); font-weight:bold">$${p.price}</p>
+                <button onclick="addToCart(${p.id})">Add to Cart</button>
+            </div>
+        `).join('');
+        document.getElementById("productList").innerHTML = html;
+    }
+
+    function addToCart(id) {
+        const item = inventory.find(p => p.id === id);
+        cart.push(item);
+        document.getElementById("cartCount").innerText = `🛒 ${cart.length} Items`;
+    }
+
+    function searchProduct(val) {
+        const filtered = inventory.filter(p => p.name.toLowerCase().includes(val.toLowerCase()));
+        render(filtered);
+    }
+
+    // Auth Guard
+    if(localStorage.getItem("session_token")) showHome();
+</script>
+
+</body>
+</html>
